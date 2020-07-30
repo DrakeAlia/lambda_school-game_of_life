@@ -1,132 +1,349 @@
 import React, { Component } from 'react';
 import './App.css';
-import Grid from './Grid';
-import Buttons from './Buttons';
+import { ButtonToolbar, DropdownItem, DropdownButton } from 'react-bootstrap';
+import Rules from './Rules';
+import About from './About';
+// import DropdownItem from 'react-bootstrap/esm/DropdownItem';
 
-
-class App extends Component {
-  constructor() {
-    super();
-    this.rows = 30;
-    this.cols = 50;
-
-    this.state = {
-      generation: 0,
-      gridFull: Array(this.rows).fill().map(() => Array(this.cols).fill(false))
-    }
+class Box extends Component {
+  // Arrow function to select a box by row and column
+  selectBox = () => {
+    this.props.selectBox(this.props.row, this.props.col);
   }
 
-  // Select Box Handler
-  selectBox = (row, col) => {
-    let gridCopy = arrayClone(this.state.gridFull);
-    gridCopy[row][col] = !gridCopy[row][col];
-    this.setState({gridFull: gridCopy});
+  render(){
+    return(
+      <div
+          className = {this.props.boxClass}
+          id = {this.props.id}
+          onClick = {this.selectBox}
+      />
+    );
   }
+}
 
-  // Fills in random cells to the grid
-  randomizer = () => {
-    let gridCopy = arrayClone(this.state.gridFull);
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.cols; j++) {
-        if (Math.floor(Math.random() * 5) === 1) {
-          gridCopy[i][j] = true;
-        }
+class Grid extends Component{
+
+  render(){
+    // Set a constant width equal to the number columns, consider the border which is one pixel
+    const width = this.props.cols * 16;
+    // Array of all rows in the grid
+    // Add everything that will show up in the grid to this array
+    let rowArray = []; 
+    let boxClass = "";
+    // Get this.props.rows and this.props.cols from parent "App"
+    for(let i = 0; i < this.props.rows; i++) {
+      // looping over the columns in each row
+      for (let j = 0; j < this.props.cols; j++) {
+        let boxId = i + "_" + j; // the id that goes with each box element the first box id would be 1_1
+
+        // Get this.props.gridFull from parent App component
+        // Ternary operator to identify the status of the box as on or off, fill the box to indicate "on" state
+        boxClass = this.props.gridFull[i][j] ? "box on" : "box off";
+        // Push the box component into the array
+        rowArray.push(
+          <Box
+            boxClass = {boxClass}
+            key = {boxId}
+            boxId = {boxId}
+            row = {i}
+            col = {j}
+            selectBox = {this.props.selectBox}
+            />
+        )
       }
     }
-    this.setState({gridFull: gridCopy});
-  }
 
-  // Starts the simulation
-  start = () => {
-    clearInterval(this.intervalId);
-    this.intervalId = setInterval(this.play);
-  }
-
-  // Stops the simulation
-  stop = () => {
-    clearInterval(this.intervalId);
-  }
-
-  //Clears the grid
-  clear = () => {
-    var grid = Array(this.rows).fill().map(() => Array(this.cols).fill(false));
-    this.setState({
-      gridFull: grid,
-      generation: 0,
-    });
-  }
-
-
-  play = () => {
-    // Initialize grid and make a clone for changes made
-    let grid1 = this.state.gridFull;
-    let grid2 = arrayClone(this.state.gridFull);
-
-    // Nested for loop to run through each cell in the grid
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.cols; j++) {
-
-        let neighbors = 0;
-        // Check each neighboring box and increase count for each live cell
-        // Right
-        if (j < this.cols - 1) if (grid1[i][j + 1]) neighbors++;
-        // Top
-        if (i < this.rows - 1) if (grid1[i + 1][j]) neighbors++;
-        // Left
-        if (j > 0) if (grid1[i][j - 1]) neighbors++;
-        // Bottom
-        if (i > 0) if (grid1[i - 1][j]) neighbors++;
-        // Bottom Right
-        if (i > 0 && j < this.cols - 1) if (grid1[i - 1][j + 1]) neighbors++;
-        // Top Right
-        if (i < this.rows - 1 && j < this.cols - 1) if (grid1[i + 1][j + 1]) neighbors++;
-        // Top Left
-        if (i < this.rows - 1 && j > 0) if (grid1[i + 1][j - 1]) neighbors++;
-        // Bottom Left 
-        if (i > 0 && j > 0) if (grid1[i - 1][j - 1]) neighbors++;
-
-
-        // If less than 2 or more than 3 neighbors, kill cell
-        if (grid1[i][j] && (neighbors < 2 || neighbors > 3)) grid2[i][j] = false;
-        // If cell is dead and has 3 neighbors, cell goes live
-		    if (!grid1[i][j] && neighbors === 3) grid2[i][j] = true;
-      }
-    }
-    // Set state to grid2 and increment the generation counter
-    this.setState({
-		  gridFull: grid2,
-		  generation: this.state.generation + 1
-		});
-  }
-
-  componentDidMount() {
-    this.randomizer();
-    this.start();
-  }
-
-  render() {
     return (
-      <div className="App">
-        <h1>Conway's Game of Life</h1>
-        <h2 className="generation">Generations: {this.state.generation}</h2>
-        <Grid 
-          gridFull={this.state.gridFull}
-          rows={this.rows}
-          cols={this.cols}
-          selectBox={this.selectBox}
-        />
-        <Buttons 
-          start={this.start}
-          stop={this.stop}
-          clear={this.clear}
-          randomizer={this.randomizer}
-        />
+      // This inline style will allow for a variable width
+      <div className = "grid" style = {{width: width}}>
+        {rowArray}
       </div>
     );
   }
 }
 
-function arrayClone(arr) {
+class Controls extends Component{
+
+  handleGridSize = (event) => {
+    this.props.gridSize(event);
+  }
+
+  render () {
+    return(
+      <div className = "controls">
+        <h4>
+          Game Controls
+        </h4>
+        <ButtonToolbar>
+        <button className = "start-button" onClick = {this.props.playButton}>
+          Start
+        </button>
+        <button className = "pause-button" onClick = {this.props.pauseButton}>
+          Stop
+        </button>
+        <button className = "clear-button" onClick = {this.props.clearButton}>
+          Reset
+        </button>
+        <button className = "random-pattern" onClick = {this.props.random}>
+          Random
+        </button>
+        <button onClick = {this.props.slow}>
+          Slower
+        </button>
+        <button onClick = {this.props.fast}>
+          Faster
+        </button>
+        {/* <DropdownButton
+          class="button"
+          title="Grid Size"
+          id="size-menu"
+          onSelect={this.handleSelect}
+          >
+            <Dropdown.Item eventKey="1">20x10</Dropdown.Item>
+            <Dropdown.Item eventKey="2">50x30</Dropdown.Item>
+            <Dropdown.Item eventKey="3">70x50</Dropdown.Item>
+            </DropdownButton> */}
+          </ButtonToolbar>
+      </div>
+    );
+  }
+}
+
+
+class App extends Component {
+  constructor() {
+    super();
+
+    // These variables will not be accessible to other components
+    // Define these outside of state so we can reference them within the state
+    this.rows = 30;
+    this.cols = 50;
+
+    this.speed = 400;
+
+    this.state = {
+      // This variable serves as a counter to track which generation the game is on
+      generation: 0,
+      /* create an array the size of the row variable and fill it with a map containing an array
+      the size of the columns variable where each element in that array is false (cells start as turned-off)
+      */
+      gridFull: Array(this.rows).fill().map(() => Array(this.cols).fill(false))
+
+    }
+  }
+
+  selectBox = (row, col) => {
+    // Make a copy so that we are not updating state directly
+    let gridCopy = arrayClone(this.state.gridFull);
+    // Find the box that was clicked and set it's state to the opposite of what it was
+    gridCopy[row][col] = !gridCopy[row][col];
+    // Now update the state to be the grid copy
+    this.setState({
+      gridFull: gridCopy
+    });
+  }
+
+  gridSize = (size) => {
+    switch(size) {
+      case "1":
+        this.cols = 30;
+        this.rows = 20;
+      break;
+      case "2":
+        this.cols = 50;
+        this.rows = 30;
+    }
+    this.clear();
+  }
+
+  random = () => {
+    // Make a copy of the grid using the arrayClone function
+    let gridCopy = arrayClone(this.state.gridFull);
+    // Loop over rows, then columns within each row
+    for (let i = 0; i<this.rows; i++){
+      for (let j=0; j<this.cols; j++){
+        /* Math.random generates a random number between 0 and 1, 
+        when multiplied by 4 we get a random number between 0 and 4,
+        we round down to the nearest integer. This method will generate
+        a 1 25% of the time.  
+        */
+        if (Math.floor(Math.random()*4) === 1){
+          // If the random number is a 1, we fill the grid
+          // 25% chance of filling in the square
+          gridCopy[i][j] = true; 
+        }
+      }
+    }
+    // Set the state with the copied grid containing about 25% "live cells"
+    this.setState({
+      gridFull: gridCopy
+    });
+  }
+
+  // Play button function to start game 
+  playButton = () => {
+    // This line is to start the game over once someone clicks the playButton
+    clearInterval(this.intervalId);
+    // This will run the play function at the specified rate
+    this.intervalId = setInterval(this.play, this.speed);
+  }
+
+  pauseButton = () => {
+    clearInterval(this.intervalId);
+  }
+
+  clear = () => {
+    let grid = Array(this.rows).fill().map(() => Array(this.cols).fill(false));
+    this.setState({
+      gridFull: grid,
+      generation: 0
+    });
+  }
+ 
+  //main function for making the game work
+  /*
+  1. Any live cell with fewer than two live neighbors dies
+  2. Any live cell with two or three live neighbors lives on to the next generation
+  3. Any live cell with more than three live neighbors dies
+  4. Any dead cell with exactly three live neighbors becomes a live cell
+  */
+
+play = () => {
+  let g = this.state.gridFull;
+  let g2 = arrayClone(this.state.gridFull);
+
+  // loop over each row and then each column within the row
+  for (let i = 0; i < this.rows; i++) {
+    for (let j = 0; j < this.cols; j++){
+      let count = 0; // the count keeps track of the number of adjacent live cells
+      /* The rundown of the play:
+        i is the row
+
+        i-1 is the row above i
+
+        i+1 is the row below i
+
+        j is the column
+
+        j-1 is the column to the left
+
+        j+1 is the column to the right
+
+        we can access a cell with i,j and there are 8 cells around cell i,j
+
+        top [i-1][j]
+
+        top-right-corner [i-1][j+1]
+
+        right-side [i][j+1]
+
+        bottom-right-corner [i+1][j+1]
+
+        bottom [i+1][j]
+
+        bottom-left-corner [i+1][j-1]
+
+        left-side [i][j-1]
+
+        top-left-corner [i-1][j-1]
+
+        We are have to apply thr rules carefully to cells that are not in the top(i=0)/bottom(i = this.rows-1) rows
+
+        and not in the left(j=0)/right(j=this.cols-1) columns
+        */
+
+      // if we are not at the top row, add to count if cell at top is full
+      if (i > 0) if (g[i-1][j]) count++; 
+      // if we are not at the top-left-corner, add to count if cell at top-left-corner is full 
+      if (i > 0 && j > 0) if (g[i-1][j-1]) count++; 
+      // if we are not at the top-right-corner, add to count if cell at top-right-corner is full
+      if (i > 0 && j < this.cols - 1) if (g[i-1][j+1]) count++;
+      // if we are not at the far right column, add to the count if the cell to the right is full
+      if (j < this.cols-1) if (g[i][j+1]) count++;
+      // if we are not at the far left column, add to the count if the cell to the left is full
+      if (j > 0) if (g[i][j-1]) count++;
+      // if we are not in the bottom row, add to the count if the cell below is full
+      if (i < this.rows - 1) if (g[i+1][j]) count++;
+      // if we are not in the bottom left corner, add to the count if the cell in bottom left corner is full
+      if (i < this.rows - 1 && j > 0) if (g[i+1][j-1]) count++;
+      // if we are not in the bottom right corner, add to the count if cell in bottom right corner is full
+      if (i < this.rows - 1 && j < this.cols - 1) if (g[i+1][j+1]) count++;
+      // apply the rules of the game based on the count of filled adjacent cells
+      if (g[i][j] && (count < 2 || count > 3)) g2[i][j] = false;
+      if (!g[i][j] && count === 3) g2[i][j] = true;
+    } 
+  }
+  this.setState({
+    gridFull: g2,
+    generation: this.state.generation + 1
+  });
+}
+
+slow = () => {
+  this.speed = 1000;
+  this.playButton();
+}
+
+fast = () => {
+  this.speed = 100;
+  this.playButton();
+}
+
+  render(){
+
+    return (
+      // Always wrap everything in a div
+      <div className="App">
+
+      <div className = "container">
+
+      <div className= "main">
+        <h2>
+          Conway's Game Of Life
+        </h2>
+        <Grid
+          /* pass in these variables in the parent component so as to reference them
+          from within the Grid component */ 
+          gridFull = {this.state.gridFull}
+          rows = {this.rows}
+          cols = {this.cols}
+          selectBox = {this.selectBox}
+        
+        />
+        <h4>
+          Generations: {this.state.generation}
+        </h4>
+        {/* <Info />
+        <Route path='/about' component={About}/>
+        <Route path='/rules' component={Rules}/> */}
+        <Rules />
+        <About />
+        </div>
+
+        <div className = "side-panel">
+        <Controls 
+          playButton = {this.playButton}
+          pauseButton = {this.pauseButton}
+          clearButton = {this.clear}
+          slow = {this.slow}
+          fast = {this.fast}
+          random = {this.random}
+          gridSize = {this.gridSize}
+        />
+        </div> 
+
+        </div>
+
+      </div>
+    );
+  }
+}
+
+/* create this helper function to take in an array and then stringify then copy it (deep clone)
+ can't use slice because this is a nested array
+*/
+function arrayClone(arr){
   return JSON.parse(JSON.stringify(arr));
 }
 
