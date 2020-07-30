@@ -7,7 +7,7 @@ class Rules extends Component {
       return(
         <div className = "text-block">
             <h4>
-                Rules of the Game
+                Rules of the Game of Life
             </h4>
             <p>
                 Every cell interacts with its eight neighbours, which are the cells that are horizontally, vertically, or diagonally adjacent. At each step in time, the following transitions occur:
@@ -30,3 +30,4 @@ class Rules extends Component {
   }
 
   export default Rules; 
+

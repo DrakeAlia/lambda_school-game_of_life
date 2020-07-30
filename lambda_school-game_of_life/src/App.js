@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { Link, Route } from 'react-router-dom';
-import { ButtonToolbar, MenuItem, DropdownButton } from 'react-bootstrap';
+import './App.css';
+import { ButtonToolbar, DropdownItem, DropdownButton } from 'react-bootstrap';
 import Rules from './Rules';
 import About from './About';
-import './App.css';
+// import DropdownItem from 'react-bootstrap/esm/DropdownItem';
 
 class Box extends Component {
-  // arrow function to select a box by row and column
+  // Arrow function to select a box by row and column
   selectBox = () => {
     this.props.selectBox(this.props.row, this.props.col);
   }
@@ -25,22 +25,22 @@ class Box extends Component {
 class Grid extends Component{
 
   render(){
-    //set a constant width equal to the number columns, consider the border which is one pixel
-    const width = this.props.cols * 14;
-    //array of all rows in the grid
-    let rowArray = []; //add everything that will show up in the grid to this array
-
+    // Set a constant width equal to the number columns, consider the border which is one pixel
+    const width = this.props.cols * 16;
+    // Array of all rows in the grid
+    // Add everything that will show up in the grid to this array
+    let rowArray = []; 
     let boxClass = "";
-    // get this.props.rows and this.props.cols from parent "App"
+    // Get this.props.rows and this.props.cols from parent "App"
     for(let i = 0; i < this.props.rows; i++) {
       // looping over the columns in each row
       for (let j = 0; j < this.props.cols; j++) {
         let boxId = i + "_" + j; // the id that goes with each box element the first box id would be 1_1
 
-        //get this.props.gridFull from parent App component
-        //ternary operator to identify the status of the box as on or off, fill the box to indicate "on" state
+        // Get this.props.gridFull from parent App component
+        // Ternary operator to identify the status of the box as on or off, fill the box to indicate "on" state
         boxClass = this.props.gridFull[i][j] ? "box on" : "box off";
-        // push the box component into the array
+        // Push the box component into the array
         rowArray.push(
           <Box
             boxClass = {boxClass}
@@ -55,7 +55,7 @@ class Grid extends Component{
     }
 
     return (
-      //this inline style will allow for a variable width
+      // This inline style will allow for a variable width
       <div className = "grid" style = {{width: width}}>
         {rowArray}
       </div>
@@ -76,8 +76,8 @@ class Controls extends Component{
           Game Controls
         </h4>
         <ButtonToolbar>
-        <button className = "play-button" onClick = {this.props.playButton}>
-          Play
+        <button className = "start-button" onClick = {this.props.playButton}>
+          Start
         </button>
         <button className = "pause-button" onClick = {this.props.pauseButton}>
           Stop
@@ -94,28 +94,37 @@ class Controls extends Component{
         <button onClick = {this.props.fast}>
           Faster
         </button>
-        </ButtonToolbar>
+        {/* <DropdownButton
+          class="button"
+          title="Grid Size"
+          id="size-menu"
+          onSelect={this.handleSelect}
+          >
+            <Dropdown.Item eventKey="1">20x10</Dropdown.Item>
+            <Dropdown.Item eventKey="2">50x30</Dropdown.Item>
+            <Dropdown.Item eventKey="3">70x50</Dropdown.Item>
+            </DropdownButton> */}
+          </ButtonToolbar>
       </div>
-
     );
   }
 }
-
 
 
 class App extends Component {
   constructor() {
     super();
 
-    // these variables will not be accessible to other components
-    // define these outside of state so we can reference them within the state
+    // These variables will not be accessible to other components
+    // Define these outside of state so we can reference them within the state
     this.rows = 30;
     this.cols = 50;
 
     this.speed = 400;
 
     this.state = {
-      generation: 0, //this variable serves as a counter to track which generation the game is on
+      // This variable serves as a counter to track which generation the game is on
+      generation: 0,
       /* create an array the size of the row variable and fill it with a map containing an array
       the size of the columns variable where each element in that array is false (cells start as turned-off)
       */
@@ -125,11 +134,11 @@ class App extends Component {
   }
 
   selectBox = (row, col) => {
-    // make a copy so that we are not updating state directly
+    // Make a copy so that we are not updating state directly
     let gridCopy = arrayClone(this.state.gridFull);
-    // find the box that was clicked and set it's state to the opposite of what it was
+    // Find the box that was clicked and set it's state to the opposite of what it was
     gridCopy[row][col] = !gridCopy[row][col];
-    // now update the state to be the grid copy
+    // Now update the state to be the grid copy
     this.setState({
       gridFull: gridCopy
     });
@@ -149,9 +158,9 @@ class App extends Component {
   }
 
   random = () => {
-    //make a copy of the grid using the arrayClone function
+    // Make a copy of the grid using the arrayClone function
     let gridCopy = arrayClone(this.state.gridFull);
-    //loop over rows, then columns within each row
+    // Loop over rows, then columns within each row
     for (let i = 0; i<this.rows; i++){
       for (let j=0; j<this.cols; j++){
         /* Math.random generates a random number between 0 and 1, 
@@ -160,22 +169,23 @@ class App extends Component {
         a 1 25% of the time.  
         */
         if (Math.floor(Math.random()*4) === 1){
-          //if the random number is a 1, we fill the grid
-          gridCopy[i][j] = true; //25% chance of filling in the square
+          // If the random number is a 1, we fill the grid
+          // 25% chance of filling in the square
+          gridCopy[i][j] = true; 
         }
       }
     }
-    //set the state with the copied grid containing about 25% "live cells"
+    // Set the state with the copied grid containing about 25% "live cells"
     this.setState({
       gridFull: gridCopy
     });
   }
 
-  //play button function to start game 
+  // Play button function to start game 
   playButton = () => {
-    //this line is to start the game over once someone clicks the playButton
+    // This line is to start the game over once someone clicks the playButton
     clearInterval(this.intervalId);
-    //this will run the play function at the specified rate
+    // This will run the play function at the specified rate
     this.intervalId = setInterval(this.play, this.speed);
   }
 
@@ -207,42 +217,59 @@ play = () => {
   for (let i = 0; i < this.rows; i++) {
     for (let j = 0; j < this.cols; j++){
       let count = 0; // the count keeps track of the number of adjacent live cells
-      /* 
+      /* The rundown of the play:
         i is the row
+
         i-1 is the row above i
+
         i+1 is the row below i
+
         j is the column
+
         j-1 is the column to the left
+
         j+1 is the column to the right
+
         we can access a cell with i,j and there are 8 cells around cell i,j
+
         top [i-1][j]
+
         top-right-corner [i-1][j+1]
+
         right-side [i][j+1]
+
         bottom-right-corner [i+1][j+1]
+
         bottom [i+1][j]
+
         bottom-left-corner [i+1][j-1]
+
         left-side [i][j-1]
+
         top-left-corner [i-1][j-1]
+
         We are have to apply thr rules carefully to cells that are not in the top(i=0)/bottom(i = this.rows-1) rows
+
         and not in the left(j=0)/right(j=this.cols-1) columns
         */
-      //if we are not at the top row, add to count if cell at top is full
+
+      // if we are not at the top row, add to count if cell at top is full
       if (i > 0) if (g[i-1][j]) count++; 
-      //if we are not at the top-left-corner, add to count if cell at top-left-corner is full 
+      // if we are not at the top-left-corner, add to count if cell at top-left-corner is full 
       if (i > 0 && j > 0) if (g[i-1][j-1]) count++; 
-      //if we are not at the top-right-corner, add to count if cell at top-right-corner is full
+      // if we are not at the top-right-corner, add to count if cell at top-right-corner is full
       if (i > 0 && j < this.cols - 1) if (g[i-1][j+1]) count++;
-      //if we are not at the far right column, add to the count if the cell to the right is full
+      // if we are not at the far right column, add to the count if the cell to the right is full
       if (j < this.cols-1) if (g[i][j+1]) count++;
-      //if we are not at the far left column, add to the count if the cell to the left is full
+      // if we are not at the far left column, add to the count if the cell to the left is full
       if (j > 0) if (g[i][j-1]) count++;
-      //if we are not in the bottom row, add to the count if the cell below is full
+      // if we are not in the bottom row, add to the count if the cell below is full
       if (i < this.rows - 1) if (g[i+1][j]) count++;
-      //if we are not in the bottom left corner, add to the count if the cell in bottom left corner is full
+      // if we are not in the bottom left corner, add to the count if the cell in bottom left corner is full
       if (i < this.rows - 1 && j > 0) if (g[i+1][j-1]) count++;
-      //if we are not in the bottom right corner, add to the count if cell in bottom right corner is full
+      // if we are not in the bottom right corner, add to the count if cell in bottom right corner is full
       if (i < this.rows - 1 && j < this.cols - 1) if (g[i+1][j+1]) count++;
-      //apply the rules of the game based on the count of filled adjacent cells
+      // apply the rules of the game based on the count of filled adjacent cells
       if (g[i][j] && (count < 2 || count > 3)) g2[i][j] = false;
       if (!g[i][j] && count === 3) g2[i][j] = true;
     } 
@@ -266,7 +293,7 @@ fast = () => {
   render(){
 
     return (
-      //always wrap everything in a div
+      // Always wrap everything in a div
       <div className="App">
 
       <div className = "container">
@@ -313,7 +340,7 @@ fast = () => {
   }
 }
 
-/*create this helper function to take in an array and then stringify then copy it (deep clone)
+/* create this helper function to take in an array and then stringify then copy it (deep clone)
  can't use slice because this is a nested array
 */
 function arrayClone(arr){
