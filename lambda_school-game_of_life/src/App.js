@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-import { ButtonToolbar, DropdownItem, DropdownButton } from 'react-bootstrap';
+import { ButtonToolbar, Dropdown, DropdownButton } from 'react-bootstrap';
 import Rules from './Rules';
 import About from './About';
 // import DropdownItem from 'react-bootstrap/esm/DropdownItem';
@@ -94,7 +94,10 @@ class Controls extends Component{
         <button onClick = {this.props.fast}>
           Faster
         </button>
-        {/* <DropdownButton
+        < button onClick = {this.props.singleStep}>
+          Single Step
+        </button>
+        <DropdownButton
           class="button"
           title="Grid Size"
           id="size-menu"
@@ -103,7 +106,7 @@ class Controls extends Component{
             <Dropdown.Item eventKey="1">20x10</Dropdown.Item>
             <Dropdown.Item eventKey="2">50x30</Dropdown.Item>
             <Dropdown.Item eventKey="3">70x50</Dropdown.Item>
-            </DropdownButton> */}
+            </DropdownButton>
           </ButtonToolbar>
       </div>
     );
@@ -187,6 +190,10 @@ class App extends Component {
     clearInterval(this.intervalId);
     // This will run the play function at the specified rate
     this.intervalId = setInterval(this.play, this.speed);
+  }
+
+  singleStep = () => {
+    this.play()
   }
 
   pauseButton = () => {
@@ -330,6 +337,7 @@ fast = () => {
           fast = {this.fast}
           random = {this.random}
           gridSize = {this.gridSize}
+          singleStep = {this.singleStep}
         />
         </div> 
 
